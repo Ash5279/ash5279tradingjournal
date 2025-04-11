@@ -246,26 +246,34 @@
     updateYearlySummary();
   }
 
-  function showPopup(date, trades) {
-    const popup = document.getElementById('summary-popup');
-    if (popup) popup.remove();
+function showPopup(date, trades) {
+  // Remove existing popup if any
+  const oldPopup = document.getElementById('summary-popup');
+  if (oldPopup) oldPopup.remove();
 
-    const div = document.createElement('div');
-    div.id = 'summary-popup';
-    div.innerHTML = `<strong>📅 ${date}</strong><br>
-      Trades: ${trades.length}<br>
-      Net: $${trades.reduce((s, t) => s + t.profitLoss, 0).toFixed(2)}<br><hr>
-      <ul>${trades.map(t => `<li>${t.tradePair} — $${t.profitLoss}</li>`).join('')}</ul>`;
-    document.body.appendChild(div);
+  // Create new popup
+  const popup = document.createElement('div');
+  popup.id = 'summary-popup';
+  popup.innerHTML = `
+    <strong>📅 ${date}</strong><br>
+    Trades: ${trades.length}<br>
+    Net: $${trades.reduce((s, t) => s + t.profitLoss, 0).toFixed(2)}<br><hr>
+    <ul>${trades.map(t => `<li>${t.tradePair} — $${t.profitLoss.toFixed(2)}</li>`).join('')}</ul>
+  `;
+  document.body.appendChild(popup);
 
-    const listener = e => {
-      if (!div.contains(e.target)) {
-        div.remove();
-        document.removeEventListener('click', listener);
-      }
-    };
-    setTimeout(() => document.addEventListener('click', listener), 0);
-  }
+  // Allow clicking outside to close
+  const outsideClickListener = (event) => {
+    if (!popup.contains(event.target)) {
+      popup.remove();
+      document.removeEventListener('click', outsideClickListener);
+    }
+  };
+  
+  // Small delay to prevent immediate close on creation
+  setTimeout(() => document.addEventListener('click', outsideClickListener), 10);
+}
+
 
   function updateYearlySummary() {
     const months = Array(12).fill(0);
