@@ -1,265 +1,318 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Trading Journal</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f3f4f6;
       margin: 0;
-      padding: 0;
-      color: #333;
+      background-color: #f5f7fa;
     }
+
     header {
-      background-color: #1f2937;
-      color: white;
-      padding: 20px 30px;
       text-align: center;
-      font-size: 1.8em;
-      font-weight: bold;
+      padding: 30px 20px 10px;
+      background-color: #0f172a;
+      color: white;
     }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 30px 20px;
+
+    h1 {
+      margin: 0;
+      font-size: 2rem;
     }
-    #calendar-container, #yearly-summary {
+
+    .calendar-container {
+      max-width: 1100px;
+      margin: 30px auto;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin-bottom: 40px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    #month-navigation {
+
+    .month-navigation {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
     }
-    #month-name {
-      font-size: 1.6em;
-      font-weight: 600;
+
+    .month-name {
+      font-size: 1.5rem;
+      font-weight: bold;
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
+      gap: 6px;
     }
-    .weekday-header {
+
+    .weekday-header, .day-cell {
       text-align: center;
-      font-weight: bold;
-      padding-bottom: 5px;
-      border-bottom: 2px solid #ddd;
-    }
-    .day-cell {
-      background-color: #f9fafb;
-      border: 1px solid #e5e7eb;
+      padding: 8px;
       border-radius: 6px;
-      text-align: center;
-      padding: 8px 5px;
-      min-height: 70px;
-      font-size: 14px;
-      cursor: pointer;
     }
-    .profit { background-color: #d1fae5; }
-    .loss { background-color: #fee2e2; }
-    .neutral { background-color: #f3f4f6; }
+
+    .weekday-header {
+      font-weight: bold;
+      background: #f1f3f5;
+    }
+
+    .day-cell {
+      min-height: 70px;
+      background-color: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .day-cell.profit { background-color: #e6f4ea; }
+    .day-cell.loss { background-color: #fdecea; }
+    .day-cell.neutral { background-color: #f4f4f4; }
+
+    .summary-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 20px;
+      z-index: 1000;
+      max-width: 350px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
 
     .monthly-summary {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
       justify-content: center;
-      margin-top: 20px;
-    }
-    .month-block {
-      width: 100px;
-      text-align: center;
-      padding: 12px 8px;
-      border-radius: 8px;
-      font-weight: bold;
-      color: white;
-      position: relative;
-    }
-    .month-block.profit { background-color: #10b981; }
-    .month-block.loss { background-color: #ef4444; }
-    .month-block.neutral { background-color: #6b7280; }
-    .month-block .label {
-      font-size: 1em;
-    }
-    .month-block .pnl {
-      font-size: 0.9em;
-      margin-top: 4px;
-      display: block;
+      gap: 10px;
+      margin: 30px auto 10px;
     }
 
-    .yearly-details {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      margin-top: 30px;
-    }
-    .yearly-total {
-      flex: 1 1 70%;
-      font-size: 1.2em;
-      font-weight: bold;
-      background-color: #f1f5f9;
-      padding: 15px;
-      border-radius: 8px;
+    .month-block {
+      width: 100px;
+      height: 80px;
       text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
-    .yearly-stats {
-      flex: 1 1 25%;
-      background: #f9fafb;
+
+    .month-block.profit { background-color: #28a745; }
+    .month-block.loss { background-color: #dc3545; }
+    .month-block.neutral { background-color: #6c757d; }
+
+    .yearly-summary-section {
+      display: flex;
+      max-width: 1100px;
+      margin: 20px auto 60px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .left-summary {
+      flex: 3;
+    }
+
+    .right-summary {
+      flex: 1;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .yearly-total {
+      background: #f1f1f1;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+
+    .stat-block {
+      margin: 10px 0;
+      font-size: 1rem;
+    }
+
+    footer {
+      text-align: center;
       padding: 15px;
-      border-radius: 8px;
-      font-size: 0.95em;
-      box-shadow: inset 0 0 3px rgba(0,0,0,0.05);
-    }
-    .yearly-stats p {
-      margin: 8px 0;
+      background: #0f172a;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <header>📈 Trading Journal Dashboard</header>
-  <div class="container">
-    <div id="calendar-container">
-      <div id="month-navigation">
-        <button onclick="changeMonth(-1)">← Previous</button>
-        <div id="month-name"></div>
-        <button onclick="changeMonth(1)">Next →</button>
-      </div>
-      <div class="grid" id="weekday-headers">
-        <div class="weekday-header">Mon</div>
-        <div class="weekday-header">Tue</div>
-        <div class="weekday-header">Wed</div>
-        <div class="weekday-header">Thu</div>
-        <div class="weekday-header">Fri</div>
-        <div class="weekday-header">Sat</div>
-        <div class="weekday-header">Sun</div>
-      </div>
-      <div class="grid" id="calendar"></div>
-    </div>
 
-    <div id="yearly-summary">
-      <h2 style="text-align:center;">📆 Yearly Summary</h2>
-      <div class="monthly-summary" id="monthly-summary"></div>
-      <div class="yearly-details">
-        <div class="yearly-total" id="yearly-total">Yearly Net P/L: $0.00</div>
-        <div class="yearly-stats" id="yearly-stats">
-          <p>Total Trades: 0</p>
-          <p>Wins: 0</p>
-          <p>Losses: 0</p>
-          <p>Win Rate: 0%</p>
-        </div>
-      </div>
-    </div>
+<header>
+  <h1>📊 Trading Journal</h1>
+</header>
+
+<div class="calendar-container">
+  <div class="month-navigation">
+    <button onclick="changeMonth(-1)">← Previous</button>
+    <div class="month-name" id="month-name"></div>
+    <button onclick="changeMonth(1)">Next →</button>
   </div>
 
-  <script>
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
-    let entries = {};
+  <div class="grid" id="weekday-headers">
+    <div class="weekday-header">Mon</div>
+    <div class="weekday-header">Tue</div>
+    <div class="weekday-header">Wed</div>
+    <div class="weekday-header">Thu</div>
+    <div class="weekday-header">Fri</div>
+    <div class="weekday-header">Sat</div>
+    <div class="weekday-header">Sun</div>
+  </div>
 
-    function updateMonthName() {
-      const date = new Date(currentYear, currentMonth);
-      document.getElementById("month-name").textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  <div class="grid" id="calendar"></div>
+</div>
+
+<div class="yearly-summary-section">
+  <div class="left-summary">
+    <div class="monthly-summary" id="monthly-summary"></div>
+    <div class="yearly-total" id="yearly-total">Yearly Net P/L: $0.00</div>
+  </div>
+  <div class="right-summary" id="trade-stats">
+    <h3>📈 Yearly Trade Stats</h3>
+    <div class="stat-block">✅ Wins: <span id="wins">0</span></div>
+    <div class="stat-block">❌ Losses: <span id="losses">0</span></div>
+    <div class="stat-block">📊 Total Trades: <span id="total-trades">0</span></div>
+    <div class="stat-block">📉 Win Rate: <span id="win-rate">0%</span></div>
+  </div>
+</div>
+
+<footer>
+  &copy; 2025 Trading Journal by Ash5279
+</footer>
+
+<script>
+  const calendar = document.getElementById('calendar');
+  const monthName = document.getElementById('month-name');
+  const monthlySummaryDiv = document.getElementById('monthly-summary');
+  const yearlyTotalDiv = document.getElementById('yearly-total');
+  const winsSpan = document.getElementById('wins');
+  const lossesSpan = document.getElementById('losses');
+  const totalTradesSpan = document.getElementById('total-trades');
+  const winRateSpan = document.getElementById('win-rate');
+
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+  let entries = {};
+
+  function updateMonthName() {
+    const date = new Date(currentYear, currentMonth);
+    monthName.textContent = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+  }
+
+  function changeMonth(dir) {
+    currentMonth += dir;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear--;
+    } else if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+    generateCalendar();
+  }
+
+  function generateCalendar() {
+    calendar.innerHTML = '';
+    updateMonthName();
+
+    const firstDay = new Date(currentYear, currentMonth, 1);
+    const startDay = (firstDay.getDay() + 6) % 7;
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+    for (let i = 0; i < startDay; i++) {
+      calendar.appendChild(document.createElement('div'));
     }
 
-    function changeMonth(direction) {
-      currentMonth += direction;
-      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-      else if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-      generateCalendar();
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${currentYear}-${String(currentMonth+1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const trades = entries[dateStr] || [];
+      const net = trades.reduce((sum, t) => sum + t.profitLoss, 0);
+
+      const cell = document.createElement('div');
+      cell.className = 'day-cell';
+      cell.innerHTML = `<strong>${day}</strong><br>$${net.toFixed(2)}`;
+      if (net > 0) cell.classList.add('profit');
+      else if (net < 0) cell.classList.add('loss');
+      else cell.classList.add('neutral');
+
+      calendar.appendChild(cell);
     }
 
-    function generateCalendar() {
-      const calendar = document.getElementById("calendar");
-      calendar.innerHTML = "";
-      updateMonthName();
-      const firstDay = new Date(currentYear, currentMonth, 1);
-      const startDay = (firstDay.getDay() + 6) % 7;
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    updateYearlySummary();
+  }
 
-      for (let i = 0; i < startDay; i++) calendar.appendChild(document.createElement("div"));
+  function updateYearlySummary() {
+    const months = Array(12).fill(0);
+    let yearlyTotal = 0, totalTrades = 0, wins = 0, losses = 0;
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const trades = entries[dateStr] || [];
+    for (const date in entries) {
+      const [year, month] = date.split('-');
+      if (+year === currentYear) {
+        const trades = entries[date];
         const net = trades.reduce((sum, t) => sum + t.profitLoss, 0);
-
-        const cell = document.createElement("div");
-        cell.className = "day-cell";
-        cell.innerHTML = `<strong>${day}</strong><br>${net.toFixed(2)}`;
-        if (net > 0) cell.classList.add("profit");
-        else if (net < 0) cell.classList.add("loss");
-        else cell.classList.add("neutral");
-
-        calendar.appendChild(cell);
+        months[+month - 1] += net;
+        yearlyTotal += net;
+        totalTrades += trades.length;
+        wins += trades.filter(t => t.profitLoss > 0).length;
+        losses += trades.filter(t => t.profitLoss < 0).length;
       }
-
-      updateYearlySummary();
     }
 
-    function updateYearlySummary() {
-      const months = Array(12).fill(0);
-      let totalTrades = 0, wins = 0, losses = 0, yearlyTotal = 0;
+    monthlySummaryDiv.innerHTML = '';
+    months.forEach((val, i) => {
+      const div = document.createElement('div');
+      div.className = `month-block ${val > 0 ? 'profit' : val < 0 ? 'loss' : 'neutral'}`;
+      div.innerHTML = `${new Date(0, i).toLocaleString('default', { month: 'short' })}<br>$${val.toFixed(2)}`;
+      monthlySummaryDiv.appendChild(div);
+    });
 
-      for (const date in entries) {
-        const [year, month] = date.split("-");
-        if (+year === currentYear) {
-          const dayTrades = entries[date];
-          const net = dayTrades.reduce((sum, t) => sum + t.profitLoss, 0);
-          months[+month - 1] += net;
-          yearlyTotal += net;
-          totalTrades += dayTrades.length;
-          wins += dayTrades.filter(t => t.profitLoss > 0).length;
-          losses += dayTrades.filter(t => t.profitLoss < 0).length;
-        }
-      }
+    yearlyTotalDiv.textContent = `Yearly Net P/L: ${yearlyTotal >= 0 ? '+' : ''}$${yearlyTotal.toFixed(2)}`;
+    winsSpan.textContent = wins;
+    lossesSpan.textContent = losses;
+    totalTradesSpan.textContent = totalTrades;
+    winRateSpan.textContent = totalTrades ? ((wins / totalTrades) * 100).toFixed(1) + '%' : '0%';
+  }
 
-      const monthlySummaryDiv = document.getElementById("monthly-summary");
-      monthlySummaryDiv.innerHTML = "";
-      months.forEach((val, i) => {
-        const block = document.createElement("div");
-        block.className = `month-block ${val > 0 ? 'profit' : val < 0 ? 'loss' : 'neutral'}`;
-        block.innerHTML = `<div class="label">${new Date(0, i).toLocaleString('default', { month: 'short' })}</div>
-                           <span class="pnl">$${val.toFixed(2)}</span>`;
-        monthlySummaryDiv.appendChild(block);
-      });
-
-      document.getElementById("yearly-total").textContent = `Yearly Net P/L: ${yearlyTotal >= 0 ? '+' : ''}$${yearlyTotal.toFixed(2)}`;
-      const winRate = totalTrades ? ((wins / totalTrades) * 100).toFixed(1) : 0;
-      document.getElementById("yearly-stats").innerHTML = `
-        <p>Total Trades: ${totalTrades}</p>
-        <p>Wins: ${wins}</p>
-        <p>Losses: ${losses}</p>
-        <p>Win Rate: ${winRate}%</p>`;
-    }
-
-    async function loadGoogleSheetData() {
-      const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeX81SL-dpwDeCrhL-vT507crkFYbvtq3godawYaTrPx3pXSnF3QJk3TiFyglnbxFsIopFYML8U70k/pub?output=csv";
-      const res = await fetch(url);
-      const data = await res.text();
-      const rows = data.trim().split("
-").slice(1).map(row => row.split(","));
-
-      entries = {};
-      rows.forEach(([date, tradePair, profitLoss, category]) => {
-        const parsedPL = parseFloat(profitLoss);
-        if (!entries[date]) entries[date] = [];
-        entries[date].push({
-          tradePair, profitLoss: parsedPL, category, lotsUsed: 1
+  function fetchCSVData() {
+    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTeX81SL-dpwDeCrhL-vT507crkFYbvtq3godawYaTrPx3pXSnF3QJk3TiFyglnbxFsIopFYML8U70k/pub?output=csv")
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.trim().split("\n").slice(1);
+        entries = {};
+        rows.forEach(row => {
+          const [date, pair, profitLoss, category] = row.split(",");
+          if (!entries[date]) entries[date] = [];
+          entries[date].push({
+            tradePair: pair,
+            profitLoss: parseFloat(profitLoss),
+            category
+          });
         });
+        generateCalendar();
       });
-      generateCalendar();
-    }
+  }
 
-    loadGoogleSheetData();
-  </script>
+  fetchCSVData();
+</script>
+
 </body>
 </html>
